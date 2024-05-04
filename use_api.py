@@ -2,7 +2,7 @@ from googleapiclient.discovery import build
 import csv
 import sys
 
-API_KEY = 'AIzaSyCjnEmLDdFx1k9yY_HWsPkdB82RFnE3pO8'
+API_KEY = '[REDACTED]'
 
 all_playlists = ['PLvgVvH9p4IEHNOPscRMRK2FhMDLLJGbZC', 
              'PLvgVvH9p4IEElJus8QqSjYlSXPk5pfbgL',
