@@ -31,7 +31,7 @@ time.sleep(5)  # Allow some time for the page to load
 last_height = driver.execute_script("return document.documentElement.scrollHeight")
 while True:
     driver.execute_script("window.scrollTo(0, document.documentElement.scrollHeight);")
-    time.sleep(2)  # Adjust the time delay as needed
+    time.sleep(5)  # Adjust the time delay as needed
     new_height = driver.execute_script("return document.documentElement.scrollHeight")
     if new_height == last_height:
         break
@@ -43,11 +43,11 @@ video_links = driver.find_elements(By.CSS_SELECTOR, "a.yt-simple-endpoint.style-
 # Extract video URLs
 video_urls = [link.get_attribute("href") for link in video_links]
 
-with open("temp_songs.csv", 'a', newline='') as songsfile:
+with open("temp_songs_596.csv", 'a', newline='') as songsfile:
     songs_writer = csv.writer(songsfile)
 
     # Visit each video URL and get the title
-    for url in video_urls:
+    for url in video_urls[596:]:
         video_id = url.split('&', 1)[0].split('=', 1)[1]
         driver.get(url)
         time.sleep(2)  # Adjust the time delay as needed

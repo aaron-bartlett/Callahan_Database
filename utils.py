@@ -113,11 +113,15 @@ def description_search():
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
-        fun = input('Function to run (-e: extract_data, -j: join_tables, -d: description_search): ')
+        fun = input('Function to run (--all: run all, -e: extract_data, -j: join_tables, -d: description_search): ')
     else:
         fun = sys.argv[1]
 
-    if(fun == '-e'):
+    if(fun == '--all'):
+        extract_data()
+        join_tables()
+        description_search()
+    elif(fun == '-e'):
         extract_data()
     elif(fun == '-j'):
         join_tables()
