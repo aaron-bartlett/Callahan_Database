@@ -18,6 +18,15 @@ all_playlists = ['PLvgVvH9p4IEHNOPscRMRK2FhMDLLJGbZC', # Ultiworld 2024
              'PL_OJnOESreRLIxaGAinCuU-FSFlN2nOxE', # Joe 2019
              'PLtY3QCjnzOF8zxb66uJWYXCKLS2xdsRa6'] # GOAT PLAYLIST
 
+
+necessary_playlists = ['PLvgVvH9p4IEHNOPscRMRK2FhMDLLJGbZC', # Ultiworld 2024
+                 'PLvgVvH9p4IEEgpA3-TDsT6scPZghsz3JQ', # Ultiworld 2021
+             'PLvgVvH9p4IEHGS0MIrA61oCkuYCSkeRpH', # Ultiworld 2020
+             'PLtY3QCjnzOF8zxb66uJWYXCKLS2xdsRa6'] # GOAT PLAYLIST
+
+two_playlits = ['PLvgVvH9p4IEEgpA3-TDsT6scPZghsz3JQ', # Ultiworld 2021
+             'PLvgVvH9p4IEHGS0MIrA61oCkuYCSkeRpH'] # Ultiworld 2020
+
 # Create a YouTube API client
 youtube = build('youtube', 'v3', developerKey=API_KEY)
 
@@ -26,6 +35,13 @@ if len(sys.argv) == 1:
     playlists.append(input('Paste Playlist ID: '))
 elif (sys.argv[1] == '--all'):
     playlists = all_playlists
+elif (sys.argv[1] == '--nec'):
+    playlists = necessary_playlists
+elif(sys.argv[1] == '--two'):
+    playlists = two_playlits
+elif (sys.argv[1] == '-h'):
+    print("HELP")
+    exit(1)
 else:
     playlists.append(sys.argv[1])
 

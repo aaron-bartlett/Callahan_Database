@@ -8,9 +8,10 @@ import csv
 import sys
 
 
-chromedriver = "/Users/aaron/Documents/Callahan_Data/chromedriver-mac-arm64/chromedriver"
+# Path to chrome driver
+chromedriver = "~/Documents/Callahan_Data/chromedriver-mac-arm64/chromedriver"
 
-service = Service(chromedriver)  # Replace 'path_to_chromedriver.exe' with the path to your chromedriver executable
+service = Service(chromedriver) 
 options = Options()
 options.headless = True  # Run Chrome in headless mode
 driver = webdriver.Chrome(service=service, options=options)
@@ -43,29 +44,33 @@ video_links = driver.find_elements(By.CSS_SELECTOR, "a.yt-simple-endpoint.style-
 # Extract video URLs
 video_urls = [link.get_attribute("href") for link in video_links]
 
-with open("temp_songs_596.csv", 'a', newline='') as songsfile:
+with open("tempdata/temp_songs.csv", 'a', newline='') as songsfile:
     songs_writer = csv.writer(songsfile)
 
+    ids_set = set()
     # Visit each video URL and get the title
-    for url in video_urls[596:]:
+    for url in video_urls:
         video_id = url.split('&', 1)[0].split('=', 1)[1]
-        driver.get(url)
-        time.sleep(2)  # Adjust the time delay as needed
-        try:
-            songs_set = set()
-            songs_element = driver.find_elements(By.CLASS_NAME, "yt-video-attribute-view-model__title")
-            for single_element in songs_element:
-                html_content = single_element.get_attribute('outerHTML')
-                #print("HTML content of the element:", html_content)
-                song = re.sub(r'<[^>]+>', '', html_content)
-                songs_set.add(song)
-                
-            print("Songs:", songs_set)
-            songs_writer.writerow([video_id, songs_set])
+        if video_id not in ids_set:
+            ids_set.add(video_id)
+            driver.get(url)
+            time.sleep(2)  # Adjust the time delay as needed
+            try:
+                songs_set = set()
+                songs_element = driver.find_elements(By.CLASS_NAME, "yt-video-attribute-view-model__title")
+                for single_element in songs_element:
+                    html_content = single_element.get_attribute('outerHTML')
+                    #print("HTML content of the element:", html_content)
+                    # Convert HTML to plaintext
+                    song = re.sub(r'<[^>]+>', '', html_content)
+                    songs_set.add(song)
+                    
+                print("Songs:", songs_set)
+                songs_writer.writerow([video_id, songs_set])
 
-        except Exception as e:
-            print("No Songs Detected", e)
-            songs_writer.writerow([video_id, "No Songs Detected"])
+            except Exception as e:
+                print("No Songs Detected", e)
+                songs_writer.writerow([video_id, "No Songs Detected"])
 
 # Quit the WebDriver
 driver.quit()
