@@ -2,7 +2,10 @@ from googleapiclient.discovery import build
 import csv
 import sys
 
-API_KEY = '[REDACTED]'
+API_KEY = 'REDACTED'
+
+# Path to raw data
+raw_path = 'tempdata/raw_data.csv'
 
 all_playlists = ['PLvgVvH9p4IEHNOPscRMRK2FhMDLLJGbZC', # Ultiworld 2024
              'PLvgVvH9p4IEElJus8QqSjYlSXPk5pfbgL', # Ultiworld 2023
@@ -57,7 +60,7 @@ for playlist_id in playlists:
 
     playlist_items_response = playlist_items_request.execute()
 
-    with open('raw_data.csv', 'a', newline='') as rawfile:
+    with open(raw_path, 'a', newline='') as rawfile:
 
         raw_writer = csv.writer(rawfile)
 
@@ -106,7 +109,7 @@ for playlist_id in playlists:
 
         playlist_items_response = playlist_items_request.execute()
 
-        with open('raw_data.csv', 'a', newline='') as rawfile:
+        with open(raw_path, 'a', newline='') as rawfile:
 
             raw_writer = csv.writer(rawfile)
 
@@ -144,7 +147,8 @@ for playlist_id in playlists:
                 print(video_title)
 
                 raw_writer.writerow([video_id, video_title, video_description, view_count])
-            
+
+print("API Data written to ")
             
 
         

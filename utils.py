@@ -129,6 +129,15 @@ def rm_duplicates(infile = 'output/Callahan_Videos.csv'):
     # Save the cleaned DataFrame to a new CSV file
     df_cleaned.to_csv(infile, index=False)
     print(f"Processed data saved to {infile}")
+
+def merge_drop_duplicates(infile1, infile2, outfile):
+
+    df1 = pd.read_csv(infile1)
+    df2 = pd.read_csv(infile2)
+    df_combined = pd.concat([df1, df2], ignore_index=True)
+
+    df_combined.drop_duplicates(subset='ID', keep='first').to_csv(outfile, index=False)
+    print(f"Processed data saved to {outfile}")
     
 
 if __name__ == "__main__":
