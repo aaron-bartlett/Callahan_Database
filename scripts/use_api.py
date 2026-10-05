@@ -1,31 +1,31 @@
 from googleapiclient.discovery import build
 import csv
+import os
 import sys
 
-API_KEY = 'REDACTED'
+from utils import read_playlists, tempdata
+
+API_KEY = os.environ.get('YOUTUBE_API_KEY')
+if not API_KEY:
+    sys.exit(
+        "Error: YOUTUBE_API_KEY environment variable is not set.\n"
+        "Run: export YOUTUBE_API_KEY='your-api-key-here'"
+    )
 
 # Path to raw data
-raw_path = 'tempdata/raw_data.csv'
+raw_path = tempdata('raw_data.csv')
 
-all_playlists = ['PLvgVvH9p4IEHNOPscRMRK2FhMDLLJGbZC', # Ultiworld 2024
-             'PLvgVvH9p4IEElJus8QqSjYlSXPk5pfbgL', # Ultiworld 2023
-             'PLvgVvH9p4IEFdvSjDAZJOfVRNLWFdtwLj', # Ultiworld 2022
-             'PLvgVvH9p4IEEgpA3-TDsT6scPZghsz3JQ', # Ultiworld 2021
-             'PLvgVvH9p4IEHGS0MIrA61oCkuYCSkeRpH', # Ultiworld 2020
-             'PLGifQDmxfUzYubuJc59hTUABd04nlAU5c', # Syracuse 2020
-             'PLvgVvH9p4IEHE-soVbHGrNLJjdQvS_L5y', # Ultiworld 2010s
-             'PLdw8cj3Xb9jhnLOi-xVcAaqByCMsr9ZCg', # Jonah's Best
-             'PLXbGyDmmb1MEQD-vYLWWYKYZDUjNHDvaa', # No Name 2017
-             'PLXbGyDmmb1MFYa11qYdGii7qxBdsHLS3y', # No Name 2015
-             'PLFMFBmU783XV-RNsxk8MSVcOU5gD-6Ib2', # Jacob 2016
-             'PL_OJnOESreRLIxaGAinCuU-FSFlN2nOxE', # Joe 2019
-             'PLtY3QCjnzOF8zxb66uJWYXCKLS2xdsRa6'] # GOAT PLAYLIST
+# Full playlist list lives in ultiworld_playlists.txt (one ID per line,
+# '#' comments/lines ignored) so it's shared with use_selenium.py.
+all_playlists = read_playlists()
 
-
-necessary_playlists = ['PLvgVvH9p4IEHNOPscRMRK2FhMDLLJGbZC', # Ultiworld 2024
-                 'PLvgVvH9p4IEEgpA3-TDsT6scPZghsz3JQ', # Ultiworld 2021
-             'PLvgVvH9p4IEHGS0MIrA61oCkuYCSkeRpH', # Ultiworld 2020
-             'PLtY3QCjnzOF8zxb66uJWYXCKLS2xdsRa6'] # GOAT PLAYLIST
+new_playlists = [
+    'PLvgVvH9p4IEETb53S07BUcpoHKELKRMEq', # Ultiworld 2025
+    'PLvgVvH9p4IEHNOPscRMRK2FhMDLLJGbZC', # Ultiworld 2024
+    'PLvgVvH9p4IEEgpA3-TDsT6scPZghsz3JQ', # Ultiworld 2021
+    'PLvgVvH9p4IEHGS0MIrA61oCkuYCSkeRpH', # Ultiworld 2020
+    'PLtY3QCjnzOF8zxb66uJWYXCKLS2xdsRa6', # GOAT PLAYLIST
+] 
 
 two_playlits = ['PLvgVvH9p4IEEgpA3-TDsT6scPZghsz3JQ', # Ultiworld 2021
              'PLvgVvH9p4IEHGS0MIrA61oCkuYCSkeRpH'] # Ultiworld 2020
@@ -38,8 +38,8 @@ if len(sys.argv) == 1:
     playlists.append(input('Paste Playlist ID: '))
 elif (sys.argv[1] == '--all'):
     playlists = all_playlists
-elif (sys.argv[1] == '--nec'):
-    playlists = necessary_playlists
+elif (sys.argv[1] == '--new'):
+    playlists = new_playlists
 elif(sys.argv[1] == '--two'):
     playlists = two_playlits
 elif (sys.argv[1] == '-h'):
@@ -48,12 +48,17 @@ elif (sys.argv[1] == '-h'):
 else:
     playlists.append(sys.argv[1])
 
+# Write the header once if raw_path doesn't exist yet, since every write below
+# uses append mode (rows accumulate across multiple playlists/runs).
+if not os.path.exists(raw_path) or os.path.getsize(raw_path) == 0:
+    with open(raw_path, 'w', newline='') as rawfile:
+        csv.writer(rawfile).writerow(["ID", "Title", "Description", "Views"])
 
 for playlist_id in playlists:
 
     # List of Videos in Playlist
     playlist_items_request = youtube.playlistItems().list(
-        part='snippet,status',
+        part='snippet,status,contentDetails',
         playlistId=playlist_id,
         maxResults=50 
     )
@@ -69,6 +74,7 @@ for playlist_id in playlists:
 
             video_id = item['snippet']['resourceId']['videoId']
             video_title = item['snippet']['title']
+            #video_duration = item['contentDetails']['duration']
             #video_description = item['snippet']['description']
             video_url = f"https://www.youtube.com/watch?v={video_id}"
             
@@ -85,12 +91,13 @@ for playlist_id in playlists:
             try:
                 video_response = video_request.execute()
             except Exception as e:
-                print(e)
+                print(f"Skipping {video_id}: {e}")
+                continue
 
             video_description = video_response['items'][0]['snippet']['description']
             view_count = video_response['items'][0]['statistics']['viewCount']
-            
-            
+
+
             # Print video details
             #print(f"Title: {video_title}")
             #print(f"Description: {video_description}")
@@ -101,7 +108,7 @@ for playlist_id in playlists:
 
     while("nextPageToken" in playlist_items_response):
         playlist_items_request = youtube.playlistItems().list(
-            part='snippet,status',
+            part='snippet,status,contentDetails',
             playlistId=playlist_id,
             pageToken=playlist_items_response["nextPageToken"],
             maxResults=50
@@ -134,7 +141,8 @@ for playlist_id in playlists:
                 try:
                     video_response = video_request.execute()
                 except Exception as e:
-                    print(e)
+                    print(f"Skipping {video_id}: {e}")
+                    continue
 
                 video_description = video_response['items'][0]['snippet']['description']
                 view_count = video_response['items'][0]['statistics']['viewCount']
@@ -146,9 +154,10 @@ for playlist_id in playlists:
                 #print(f"URL: {video_url} \n \n")
                 print(video_title)
 
+                #raw_writer.writerow([video_id, video_title, video_description, view_count, video_duration])
                 raw_writer.writerow([video_id, video_title, video_description, view_count])
 
-print("API Data written to ")
-            
+print(f"API Data written to {raw_path}")
+
 
         

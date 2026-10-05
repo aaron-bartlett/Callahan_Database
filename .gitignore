@@ -1,8 +1,21 @@
+# Local-only secrets / credentials
+.env
+.cache
+cookies.txt
+
+# Local tools and logs
 chromedriver-mac-arm64
+log.ytdlp
+__pycache__/
+.DS_Store
 
+# Data: everything CSV stays local except the published 2026 spreadsheet
 checkpoints/*
-
 *.csv
+!/output/Callahan_Videos_2026.csv
+!/Callahan_Videos_2026.csv
 
-use_api.py
-
+# Local-only scripts and reference copies
+scripts/analysis.py
+scripts/ARCHIVE/
+scripts/*_redacted.py
